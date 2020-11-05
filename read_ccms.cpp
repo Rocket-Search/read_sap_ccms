@@ -52,6 +52,17 @@ void signalHandler( int signum)
 int mainU(int argc, SAP_UC** argv)
 {
 
+//####################################################################
+//Error Signals
+
+        signal(SIGSEGV, signalHandler);
+        signal(SIGABRT, signalHandler);
+        signal(SIGFPE, signalHandler);
+        signal(SIGILL, signalHandler);
+        signal(SIGTERM, signalHandler);
+        signal(SIGINT, signalHandler);
+
+//####################################################################
 
 //SAP Login #################################
 	#define NUM_PARAMS 9
