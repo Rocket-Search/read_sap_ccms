@@ -4,6 +4,19 @@ This in example code, how to use BAPI and get values from CCMS.
 Please feel free to modify the code, according to your wishes and needs.
 If you have any question, don't hesitate to contact me software.moore@gmail.com
 
+This example use the following BAPI:
+
+BAPI_XMI_LOGON
+
+BAPI_SYSTEM_MON_GETLIST
+
+BAPI_SYSTEM_MON_GETTREE
+
+BAPI_SYSTEM_MTE_GETTIDBYNAME
+
+API_SYSTEM_MTE_GETPERFCURVAL
+
+
 first download SAP RFC SDK
 
 https://support.sap.com/en/product/connectors/nwrfcsdk.html#section_1291717368
