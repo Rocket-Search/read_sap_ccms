@@ -1,11 +1,18 @@
+//Compile
+//g++ -g -std=c++0x -DSAPwithUNICODE -I./nwrfcsdk/include -c -o read_ccms.o read_ccms.cpp
+//Link
+//g++ -g -o read_ccms read_ccms.o ./nwrfcsdk/lib/libsapnwrfc.so ./nwrfcsdk/lib/libsapucum.so
+//Einzeiler
+//original Compile laut SAP
+//clear; rm -frv read_ccms.o ; g++ -g -std=c++0x -DSAPwithUNICODE -I./nwrfcsdk/include -c -o read_ccms.o read_ccms.cpp ; g++ -g -fPIC -Wall -o read_ccms read_ccms.o ./nwrfcsdk/lib/libsapnwrfc.so ./nwrfcsdk/lib/libsapucum.so
 //C++17 Standard (gcc 7)
 //clear; rm -frv read_ccms.o ; g++-7 -fPIC -Wall -g -std=c++17 -DSAPwithUNICODE -I./nwrfcsdk/include -c -o read_ccms.o read_ccms.cpp ; g++-7 -g -fPIC -Wall -o read_ccms read_ccms.o ./nwrfcsdk/lib/libsapnwrfc.so ./nwrfcsdk/lib/libsapucum.so
 
 //Version
 //strings libsapnwrfc.so | grep Patch
 
-//export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/sap_rfc_sdk/nwrfcsdk/lib
-//export PATH=$PATH:/sap_rfc_sdk/nwrfcsdk/lib
+//export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:'/nwrfcsdk/lib'
+//export PATH=$PATH:'/nwrfcsdk/lib'
 
 #include <unistd.h>
 #include <stdio.h>
@@ -58,17 +65,17 @@ int mainU(int argc, SAP_UC** argv)
 	loginParams[0].name = cU("dest");
 	loginParams[0].value = cU("DEV");
 	loginParams[1].name =cU("user");
-	loginParams[1].value = cU("RFC-USER");
+	loginParams[1].value = cU("RFC_Test");
 	loginParams[2].name = cU("passwd");
 	loginParams[2].value = cU("Pa$$w0rD");
 	loginParams[3].name = cU("ASHOST");
-	loginParams[3].value = cU("HOSTNAME und in /etc/hosts eintragen");
+	loginParams[3].value = cU("hostname");
 	loginParams[4].name = cU("SYSID");
-	loginParams[4].value = cU("SAPSID");
+	loginParams[4].value = cU("SAP-SID");
 	loginParams[5].name = cU("SYSNR");
-	loginParams[5].value = cU("SYSTEMNUMMER");
+	loginParams[5].value = cU("System-Nr");
 	loginParams[6].name = cU("CLIENT");
-	loginParams[6].value = cU("100");
+	loginParams[6].value = cU("Client-Nr");
 	loginParams[7].name = cU("lang");
 	loginParams[7].value = cU("EN");
 	//##
@@ -102,10 +109,10 @@ int mainU(int argc, SAP_UC** argv)
 	}
 cout<<"##########################################################################################"<<endl;
 //###########################################################################
-//Im SAP Gui den BAPI Explorer öffnen TR /bapi
+//Im SAP Gui den BAPI explorer öffnen /nbapi
 //	-> Hirachical View -> Basis Components -> Use Subcomponents
 
-//Zur Verfügung stehenden Monitore anzeigen
+//Zur Verfügung stehneden Monitore anzeigen
 	RFC_FUNCTION_DESC_HANDLE ccms_bapi_handle;
 	RFC_FUNCTION_HANDLE rfc_handle_1;
 	RFC_FUNCTION_HANDLE rfc_handle_2;
@@ -113,7 +120,7 @@ cout<<"#########################################################################
 //####BAPI_XMI_LOGON Login. Login für CCMS notwendig
 /*Ausgabe laut trace file
 Repository::queryFunctionMetaData(BAPI_XMI_LOGON) via handle 26909520 returns function meta 19cf480
-name=BAPI_XMI_LOGON (origin=SAPSID) with 6 parameters
+name=BAPI_XMI_LOGON (origin=SAP-SID) with 6 parameters
 parameter 0 (RETURN, RFCTYPE_STRUCTURE, RFC_EXPORT, 548, 1088, 0, 19e7530, , , (nil))
 parameter 1 (SESSIONID, RFCTYPE_CHAR, RFC_EXPORT, 24, 48, 0, (nil), , Unique XMI session identification, (nil))
 parameter 2 (EXTCOMPANY, RFCTYPE_CHAR, RFC_IMPORT, 16, 32, 0, (nil), , Manufacturer of the tool you should log onto, (nil))
@@ -137,17 +144,17 @@ cout<<"#########################################################################
 	
 /*Ausgabe laut trace file
 Repository::queryFunctionMetaData(BAPI_SYSTEM_MON_GETLIST) via handle 26909520 returns function meta 19a5ca0
- name=BAPI_SYSTEM_MON_GETLIST (origin=SAPSID) with 4 parameters
- parameter 0 (RETURN, RFCTYPE_STRUCTURE, RFC_EXPORT, 548, 1088, 0, 19e7530, , Return Messages, (nil))
- parameter 1 (EXTERNAL_USER_NAME, RFCTYPE_CHAR, RFC_IMPORT, 16, 32, 0, (nil), , Name of the SAP-External User, (nil))
- parameter 2 (MONI_SET_NAME, RFCTYPE_STRUCTURE, RFC_IMPORT, 60, 120, 0, 19d4ae0, , Monitor Set Name, (nil))
- parameter 3 (MONITOR_NAMES, RFCTYPE_TABLE, RFC_TABLES, 120, 240, 0, 19d4780, , Names of the Monitors, (nil))
+	 name=BAPI_SYSTEM_MON_GETLIST (origin=SAP-SID) with 4 parameters
+	 parameter 0 (RETURN, RFCTYPE_STRUCTURE, RFC_EXPORT, 548, 1088, 0, 19e7530, , Return Messages, (nil))
+	 parameter 1 (EXTERNAL_USER_NAME, RFCTYPE_CHAR, RFC_IMPORT, 16, 32, 0, (nil), , Name of the SAP-External User, (nil))
+	 parameter 2 (MONI_SET_NAME, RFCTYPE_STRUCTURE, RFC_IMPORT, 60, 120, 0, 19d4ae0, , Monitor Set Name, (nil))
+	 parameter 3 (MONITOR_NAMES, RFCTYPE_TABLE, RFC_TABLES, 120, 240, 0, 19d4780, , Names of the Monitors, (nil))
 */
 	//####BAPI_SYSTEM_MON_GETLIST. Einlesen aller Monitore einer Monitorsammlung
 	cout<<"BAPI_SYSTEM_MON_GETLIST"<<endl;
 	ccms_bapi_handle = RfcGetFunctionDesc(conn, cU("BAPI_SYSTEM_MON_GETLIST"), &errorInfo);
 	rfc_handle_2 = RfcCreateFunction(ccms_bapi_handle, &errorInfo);
-	RfcSetChars(rfc_handle_2, cU("EXTERNAL_USER_NAME"), cU("RFC-USER"), 8, &errorInfo);
+	RfcSetChars(rfc_handle_2, cU("EXTERNAL_USER_NAME"), cU("RFC_TEST"), 8, &errorInfo);
 	
 	//####Daten an SAP senden
 	rc = RfcInvoke(conn, rfc_handle_2, &errorInfo);
@@ -166,11 +173,12 @@ Repository::queryFunctionMetaData(BAPI_SYSTEM_MON_GETLIST) via handle 26909520 r
 	RfcGetString(table, cU("MONI_NAME"), buffer,sizeofU(buffer), &resultLen, &errorInfo);
 		//printfU(cU("RfcGetString MONI_NAME# %s\n"), buffer);
 	
-	//##57 Tabllen Zeilen weiterspringen. Bei mir  "SAP CCMS Monitor Templates" -> "Filesystems"
-	for (int i = 0; i < 57; i++)
-	{
-		RfcMoveToNextRow(table, &errorInfo);
-	}
+	//##57 Tabllen Zeilen weiterspringen
+	RfcMoveTo(table , 57,&errorInfo);
+	//for (int i = 0; i < 57; i++)
+	//{
+	//	RfcMoveToNextRow(table, &errorInfo);
+	//}
 	RfcGetString(table, cU("MS_NAME"), buffer,sizeofU(buffer), &resultLen, &errorInfo);
 		printfU(cU("RfcGetString MS_NAME# %s\n"), buffer);
 	RfcGetString(table, cU("MONI_NAME"), buffer,sizeofU(buffer), &resultLen, &errorInfo);
@@ -188,11 +196,204 @@ Repository::queryFunctionMetaData(BAPI_SYSTEM_MON_GETLIST) via handle 26909520 r
 */
 cout<<"##########################################################################################"<<endl;
 //#####################################################################################################
+//CCMS Monitor name
+//BAPI_SYSTEM_MON_GETTREE
+/*
+Repository::queryFunctionMetaData(BAPI_SYSTEM_MON_GETTREE) via handle 40209232 returns function meta 2654b40
+name=BAPI_SYSTEM_MON_GETTREE (origin=SAP-SID) with 7 parameters
+parameter 0 (RETURN, RFCTYPE_STRUCTURE, RFC_EXPORT, 548, 1088, 0, 2696530, , BAPI Return Structure, (nil))
+parameter 1 (EXTERNAL_USER_NAME, RFCTYPE_CHAR, RFC_IMPORT, 16, 32, 0, (nil), , Name of the SAP-External User, (nil))
+parameter 2 (MAX_TREE_DEPTH, RFCTYPE_INT, RFC_IMPORT, 4, 4, 0, (nil), 0, , (nil))
+parameter 3 (MONITOR_NAME, RFCTYPE_STRUCTURE, RFC_IMPORT, 120, 240, 0, 2683780, , Name of the Monitor, (nil))
+parameter 4 (VIS_ON_USR_LEVEL, RFCTYPE_INT, RFC_IMPORT, 4, 4, 0, (nil), 3, , (nil))
+parameter 5 (TREE_NODES, RFCTYPE_TABLE, RFC_TABLES, 440, 828, 0, 26b96e0, , Nodes of the Monitor Tree, (nil))
+parameter 6 (TREE_NODES2, RFCTYPE_TABLE, RFC_TABLES, 696, 1340, 0, 26a7290, , The Nodes of a Monitoring Tree (Extended with the Long Monitor Names), (nil))
+*/
+	cout<<"BAPI_SYSTEM_MON_GETTREE"<<endl;
+
+	ccms_bapi_handle = RfcGetFunctionDesc(conn, cU("BAPI_SYSTEM_MON_GETTREE"), &errorInfo);
+		printfU(cU("RfcGetFunctionDesc BAPI_SYSTEM_MON_GETTREE key# %s: %d\n"),errorInfo.key);
+		printfU(cU("RfcGetFunctionDesc BAPI_SYSTEM_MON_GETTREE message# %s: %d\n"),errorInfo.message);
+		printfU(cU("RfcGetFunctionDesc BAPI_SYSTEM_MON_GETTREE code# %d\n"),errorInfo.code);
+		
+	rfc_handle_2 = RfcCreateFunction(ccms_bapi_handle, &errorInfo);
+		printfU(cU("RfcCreateFunction ccms_bapi_handle key# %s: %d\n"),errorInfo.key);
+		printfU(cU("RfcCreateFunction ccms_bapi_handle message# %s: %d\n"),errorInfo.message);
+		printfU(cU("RfcCreateFunction ccms_bapi_handle code# %d\n"),errorInfo.code);
+
+	RfcSetInt(rfc_handle_2, cU("MAX_TREE_DEPTH"), 0,&errorInfo);
+		printfU(cU("RfcSetInt MAX_TREE_DEPTH key# %s: %d\n"),errorInfo.key);
+		printfU(cU("RfcSetInt MAX_TREE_DEPTH message# %s: %d\n"),errorInfo.message);
+		printfU(cU("RfcSetInt MAX_TREE_DEPTH code# %d\n"),errorInfo.code);
+	
+	RfcSetInt(rfc_handle_2, cU("VIS_ON_USR_LEVEL"), 3,&errorInfo);
+		printfU(cU("RfcSetInt VIS_ON_USR_LEVEL key# %s: %d\n"),errorInfo.key);
+		printfU(cU("RfcSetInt VIS_ON_USR_LEVEL message# %s: %d\n"),errorInfo.message);
+		printfU(cU("RfcSetInt VIS_ON_USR_LEVEL code# %d\n"),errorInfo.code);
+
+	RfcSetChars(rfc_handle_2, cU("EXTERNAL_USER_NAME"), cU("RFC_TEST"), 8, &errorInfo);
+		printfU(cU("RfcSetChars EXTERNAL_USER_NAME key# %s: %d\n"),errorInfo.key);
+		printfU(cU("RfcSetChars EXTERNAL_USER_NAME message# %s: %d\n"),errorInfo.message);
+		printfU(cU("RfcSetChars EXTERNAL_USER_NAME code# %d\n"),errorInfo.code);
+
+//################################################################################################################################
+	//Die Import (senden) Struktur festlegen. 
+	//1. die Imp. Struktur mittels "RfcGetStructure" erfassen. 
+	//2. die Struktur mittels "RfcSetStructure" zum senden freigeben.
+	//3. Die Werte der zusendenen Struktur mittels "RfcSetChars" festlegen.
+	RfcGetStructure(rfc_handle_2, cU("MONITOR_NAME"), &returnStructure, &errorInfo);
+			printfU(cU("RfcGetStructure MONITOR_NAME key# %s: %d\n"),errorInfo.key);
+			printfU(cU("RfcGetStructure MONITOR_NAME message# %s: %d\n"),errorInfo.message);
+			printfU(cU("RfcGetStructure MONITOR_NAME code# %d\n"),errorInfo.code);
+
+	RfcSetStructure(rfc_handle_2, cU("MONITOR_NAME"),returnStructure, &errorInfo);
+			printfU(cU("RfcSetStructure MONITOR_NAME key# %s: %d\n"),errorInfo.key);
+			printfU(cU("RfcSetStructure MONITOR_NAME message# %s: %d\n"),errorInfo.message);
+			printfU(cU("RfcSetStructure MONITOR_NAME code# %d\n"),errorInfo.code);
+
+	RfcSetChars(returnStructure, cU("MS_NAME"), cU("SAP CCMS Monitor Templates"),26, &errorInfo);
+			printfU(cU("RfcSetChars MS_NAME key# %s: %d\n"),errorInfo.key);
+			printfU(cU("RfcSetChars MS_NAME message# %s: %d\n"),errorInfo.message);
+			printfU(cU("RfcSetChars MS_NAME code# %d\n"),errorInfo.code);
+	RfcSetChars(returnStructure, cU("MONI_NAME"), cU("Filesystems"),11, &errorInfo);
+			printfU(cU("RfcSetChars MONI_NAME key# %s: %d\n"),errorInfo.key);
+			printfU(cU("RfcSetChars MONI_NAME message# %s: %d\n"),errorInfo.message);
+			printfU(cU("RfcSetChars MONI_NAME code# %d\n"),errorInfo.code);
+//################################################################################################################################
+		
+	rc = RfcInvoke(conn, rfc_handle_2, &errorInfo);
+		printfU(cU("RfcInvoke key# %s: %d\n"),errorInfo.key);
+		printfU(cU("RfcInvoke message# %s: %d\n"),errorInfo.message);
+		printfU(cU("RfcInvoke code# %d\n"),errorInfo.code);
+		printfU(cU("RfcInvoke rc # %d\n"),rc);
+	
+	RfcGetStructure(rfc_handle_2, cU("RETURN"), &returnStructure, &errorInfo);
+		printfU(cU("RfcGetStructure RETURN# %s: \n"),returnStructure[0]);
+		printfU(cU("RfcGetStructure RETURN key# %s: %d\n"),errorInfo.key);
+		printfU(cU("RfcGetStructure RETURN message# %s: %d\n"),errorInfo.message);
+		printfU(cU("RfcGetStructure RETURN code# %d\n"),errorInfo.code);
+	RfcGetString(returnStructure, cU("MESSAGE"), message, sizeofU(message), &resultLen, &errorInfo);
+		printfU(cU("RfcGetString MESSAGE message# %s\n"), message);
+		printfU(cU("RfcGetString MESSAGE key# %s: %d\n"),errorInfo.key);
+		printfU(cU("RfcGetString MESSAGE message# %s: %d\n"),errorInfo.message);
+		printfU(cU("RfcGetString MESSAGE code# %d\n"),errorInfo.code);
+			
+	rowCount = 0;
+	
+	rc = RfcGetTable(rfc_handle_2, cU("TREE_NODES"),&table,&errorInfo);
+	RfcGetRowCount(table, &rowCount, &errorInfo);
+	printfU(cU("RfcGetRowCount TREE_NODES# %d\n"), rowCount);
+
+	for (unsigned i=0; i<rowCount; ++i) 
+	{
+		RfcMoveTo(table, i, NULL);
+		
+		RfcGetString(table, cU("MTSYSID"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("MTSYSID in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("MTMCNAME"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("MTMCNAME in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("MTNUMRANGE"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("MTNUMRANGE in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("MTUID"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("MTUID in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("MTCLASS"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("MTCLASS in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("MTINDEX"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("MTINDEX in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("EXTINDEX"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("EXTINDEX in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("ALTREENUM"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("ALTREENUM in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("ALIDXINTRE"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("ALIDXINTRE in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("ALLEVINTRE"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("ALLEVINTRE in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("ALPARINTRE"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("ALPARINTRE in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("OBJECTNAME"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("OBJECTNAME in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("MTNAMESHRT"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("MTNAMESHRT in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("CUSGRPNAME"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("CUSGRPNAME in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("DELIVERSTA"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("DELIVERSTA in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("HIGHALVAL"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("HIGHALVAL in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("HIGHALSEV"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("HIGHALSEV in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("ALSYSID"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("ALSYSID in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("MSEGNAME"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("MSEGNAME in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("ALUNIQNUM"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("ALUNIQNUM in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("ALINDEX"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("ALINDEX in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("ALERTDATE"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("ALERTDATE in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("ALERTTIME"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("ALERTTIME in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("DUMMYALIGN"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("DUMMYALIGN in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("LASTVALDAT"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("LASTVALDAT in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("LASTVALTIM"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("LASTVALTIM in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("LASTVALDUM"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("LASTVALDUM in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("ACTUALVAL"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("ACTUALVAL in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("ACTUALSEV"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("ACTUALSEV in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("VALSYSID"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("VALSYSID in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("VMSEGNAME"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("VMSEGNAME in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("VALUNIQNUM"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("VALUNIQNUM in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("VALINDEX"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("VALINDEX in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("VALERTDATE"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("VALERTDATE in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("VALERTTIME"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("VALERTTIME in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("VALERTDUM"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("VALERTDUM in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("COUNTOFACT"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("COUNTOFACT in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("COUNTSUM"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("COUNTSUM in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("VISUSERLEV"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("VISUSERLEV in row %d = %s\n"), i, buffer);
+		RfcGetString(table, cU("TDSTATUS"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("TDSTATUS in row %d = %s\n"), i, buffer);
+			
+	}
+	
+	rowCount = 0;
+	//RFC_TABLE_HANDLE table;
+	rc = RfcGetTable(rfc_handle_2, cU("TREE_NODES2"),&table,&errorInfo);
+	RfcGetRowCount(table, &rowCount, &errorInfo);
+	printfU(cU("RfcGetRowCount TREE_NODES2# %d\n"), rowCount);
+	for (unsigned i=0; i<rowCount; ++i) 
+	{
+		RfcMoveTo(table, i, NULL);
+		
+		RfcGetString(table, cU("ALMTFULLNM"), buffer,sizeofU(buffer), NULL, &errorInfo);				
+			printfU(cU("ALMTFULLNM in row %d = %s\n"), i, buffer);
+	}
+
+
+//#####################################################################################################
+cout<<"##########################################################################################"<<endl;
+
+//#####################################################################################################
 //BAPI_SYSTEM_MTE_GETTIDBYNAME
 //##
 /* //Ausgabe laut trace File
 Repository::queryFunctionMetaData(BAPI_SYSTEM_MTE_GETTIDBYNAME) via handle 36539216 returns function meta 22d4b40
-name=BAPI_SYSTEM_MTE_GETTIDBYNAME (origin=SAPSID) with 7 parameters
+name=BAPI_SYSTEM_MTE_GETTIDBYNAME (origin=SAP-SID) with 7 parameters
 parameter 0 (RETURN, RFCTYPE_STRUCTURE, RFC_EXPORT, 548, 1088, 0, 2316530, , Return Messages, (nil))
 parameter 1 (TID, RFCTYPE_STRUCTURE, RFC_EXPORT, 84, 168, 0, 232e160, , The returned MTE ID (TID), (nil))
 parameter 2 (CONTEXT_NAME, RFCTYPE_CHAR, RFC_IMPORT, 40, 80, 0, (nil), , The context name, (nil))
@@ -208,21 +409,21 @@ parameter 6 (SYSTEM_ID, RFCTYPE_CHAR, RFC_IMPORT, 8, 16, 0, (nil), , System ID, 
 	rfc_handle_2 = RfcCreateFunction(ccms_bapi_handle, &errorInfo);
 
 /*	
-	//#Aufbau laut CCMS im SAP "SAPSID\hostname_SAPSID_01\R3Services\Background\AbortedJobs" entspricht -> SYSTEM_ID \ CONTEXT_NAME \ <Nichts> \  OBJECT_NAME \ MTE_NAME
-	RfcSetChars(rfc_handle_2, cU("CONTEXT_NAME"), cU("hostname_SAPSID_01"), 13, &errorInfo);	
-	RfcSetChars(rfc_handle_2, cU("EXTERNAL_USER_NAME"), cU("RFC-USER"), 8, &errorInfo);
+	//#Aufbau laut CCMS im SAP "SAP-SID\hostname_SAP-SID_System-Nr\R3Services\Background\AbortedJobs" entspricht -> SYSTEM_ID \ CONTEXT_NAME \ <Nichts> \  OBJECT_NAME \ MTE_NAME
+	RfcSetChars(rfc_handle_2, cU("CONTEXT_NAME"), cU("hostname_SAP-SID_System-Nr"), 13, &errorInfo);	
+	RfcSetChars(rfc_handle_2, cU("EXTERNAL_USER_NAME"), cU("RFC_TEST"), 8, &errorInfo);
 	RfcSetChars(rfc_handle_2, cU("MTE_NAME"), cU("AbortedJobs"), 11, &errorInfo);	
 	RfcSetChars(rfc_handle_2, cU("OBJECT_NAME"), cU("Background"), 10, &errorInfo);	
-	RfcSetChars(rfc_handle_2, cU("SYSTEM_ID"), cU("SAPSID"), 3, &errorInfo);	
+	RfcSetChars(rfc_handle_2, cU("SYSTEM_ID"), cU("SAP-SID"), 3, &errorInfo);	
 */	
-	cout<<"CCMS: \'SAPSID\\hostname_SAPSID_01\\OperatingSystem\\Filesystems\\/tmp/\\Freespace\'"<<endl;
-	//#Darstellung im CCMS Menu im SAP # SAPSID\hostname_SAPSID_01\OperatingSystem\Filesystems\/tmp\Freespace
-	RfcSetChars(rfc_handle_2, cU("CONTEXT_NAME"), cU("hostname_SAPSID_01"), 13, &errorInfo);	
-	RfcSetChars(rfc_handle_2, cU("EXTERNAL_USER_NAME"), cU("RFC-USER"), 8, &errorInfo);
+	cout<<"CCMS: \'SAP-SID\\hostname_SAP-SID_System-Nr\\OperatingSystem\\Filesystems\\/tmp/\\Freespace\'"<<endl;
+	//#Darstellung in der CCMS Menu im SAP # SAP-SID\hostname_SAP-SID_System-Nr\OperatingSystem\Filesystems\/tmp\Freespace
+	RfcSetChars(rfc_handle_2, cU("CONTEXT_NAME"), cU("hostname_SAP-SID_System-Nr"), 13, &errorInfo);	
+	RfcSetChars(rfc_handle_2, cU("EXTERNAL_USER_NAME"), cU("RFC_TEST"), 8, &errorInfo);
 	RfcSetChars(rfc_handle_2, cU("MTE_NAME"), cU("Freespace"), 9, &errorInfo);	
 	RfcSetChars(rfc_handle_2, cU("OBJECT_NAME"), cU("/tmp"), 4, &errorInfo);	
 	//RfcSetChars(rfc_handle_2, cU("OBJECT_NAME"), cU("/usr"), 4, &errorInfo);	
-	RfcSetChars(rfc_handle_2, cU("SYSTEM_ID"), cU("SAPSID"), 3, &errorInfo);	
+	RfcSetChars(rfc_handle_2, cU("SYSTEM_ID"), cU("SAP-SID"), 3, &errorInfo);	
 	
 	rc = RfcInvoke(conn, rfc_handle_2, &errorInfo);
 
@@ -270,7 +471,7 @@ cout<<"#########################################################################
 /*
 RfcGetFunctionDesc(BAPI_SYSTEM_MTE_GETPERFCURVAL) via handle 36285264
 Repository::queryFunctionMetaData(BAPI_SYSTEM_MTE_GETPERFCURVAL) via handle 36285264 returns function meta 22c8740
-name=BAPI_SYSTEM_MTE_GETPERFCURVAL (origin=SAPSID) with 4 parameters
+name=BAPI_SYSTEM_MTE_GETPERFCURVAL (origin=SAP-SID) with 4 parameters
 parameter 0 (CURRENT_VALUE, RFCTYPE_STRUCTURE, RFC_EXPORT, 104, 140, 0, 22ea8f0, , Current Performance Attribute Values, (nil))
 parameter 1 (RETURN, RFCTYPE_STRUCTURE, RFC_EXPORT, 548, 1088, 0, 22d8530, , Return Messages, (nil))
 parameter 2 (EXTERNAL_USER_NAME, RFCTYPE_CHAR, RFC_IMPORT, 16, 32, 0, (nil), , Name of the SAP-External User, (nil))
@@ -281,15 +482,15 @@ parameter 3 (TID, RFCTYPE_STRUCTURE, RFC_IMPORT, 84, 168, 0, 22f0160, , MTE ID (
 
 	rfc_handle_2 = RfcCreateFunction(ccms_bapi_handle, &errorInfo);
 
-	RfcSetChars(rfc_handle_2, cU("EXTERNAL_USER_NAME"), cU("RFC-USER"), 8, &errorInfo);
+	RfcSetChars(rfc_handle_2, cU("EXTERNAL_USER_NAME"), cU("RFC_TEST"), 8, &errorInfo);
 	//RfcSetChars(tabLine, cU("EXTERNAL_USER_NAME"), buffer, strlenU(buffer), &errorInfo);
 		//printfU(cU("RfcSetChars EXTERNAL_USER_NAME key# %s: %d\n"),errorInfo.key);
 		//printfU(cU("RfcSetChars EXTERNAL_USER_NAME message# %s: %d\n"),errorInfo.message);
 		//printfU(cU("RfcSetChars EXTERNAL_USER_NAME code# %d\n"),errorInfo.code);
 		
-	/* TID aus vorherigen BAPI (//SAPSID\hostname_SAPSID_01\OperatingSystem\Filesystems\/tmp\Freespace)
-	FieldName: MTSYSID              Value: SAPSID
-	FieldName: MTMCNAME             Value: hostname_SAPSID_01
+	/* TID aus vorherigen BAPI (//SAP-SID\hostname_SAP-SID_System-Nr\OperatingSystem\Filesystems\/tmp\Freespace)
+	FieldName: MTSYSID              Value: SAP-SID
+	ieldName: MTMCNAME             Value: hostname_SAP-SID_System-Nr
 	FieldName: MTNUMRANGE           Value: 005
 	FieldName: MTUID                Value: 0000000146
 	FieldName: MTCLASS              Value: 100
